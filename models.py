@@ -11,7 +11,7 @@ def dr_cnn(num_class):
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 
-    x = Conv2D(64, (1, 8), padding='valid')(x)
+    x = Conv2D(64, (1, 16), padding='valid')(x)
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 
@@ -20,11 +20,11 @@ def dr_cnn(num_class):
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 
-    x = Dense(64, kernel_regularizer=regularizers.l2())(x)
+    x = Dense(64)(x)
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 
-    x = Dense(32, kernel_regularizer=regularizers.l2())(x)
+    x = Dense(32)(x)
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 

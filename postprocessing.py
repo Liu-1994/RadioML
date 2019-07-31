@@ -13,3 +13,13 @@ def plot_confusion_matrix(cm, labels_name, title):
     plt.yticks(num_local, labels_name)
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+def plot_lines(train_his, val_his, saved_name='images.png'):
+    x = np.arange(1, len(train_his)+1)
+    plt.plot(x, train_his, color='tomato', linewidth=2, label='train')
+    plt.plot(x, val_his, color='limegreen', linewidth=2, label='val')
+    plt.legend()
+    # plt.show()
+    plt.savefig(saved_name, format='png', bbox_inches='tight')
+    plt.close()
