@@ -10,7 +10,7 @@ diagram_classes = ['16qam', '64qam']
 
 
 def load_train_val_data_from_mat(data_path, snr_index=None, test_split=0.3):
-    if snr_index:
+    if snr_index or snr_index < 1:
         snrr_index = [snr_index]
     else:
         snrr_index = range(14)
@@ -110,7 +110,7 @@ def load_data_from_mat(data_path, snr_index=None):
 
 
 def load_data_from_jpg(data_path, snr_index=None):
-    if snr_index == 0 or snr_index:
+    if snr_index or snr_index < 1:
         snrr_index = [snr_index]
     else:
         snrr_index = range(14)
