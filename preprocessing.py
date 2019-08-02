@@ -74,7 +74,7 @@ def load_train_val_data_from_mat(data_path, snr_index=None, test_split=0.3):
 
 
 def load_data_from_mat(data_path, snr_index=None):
-    if snr_index:
+    if snr_index or snr_index < 1:
         snrr_index = [snr_index]
     else:
         snrr_index = range(14)
