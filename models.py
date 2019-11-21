@@ -28,7 +28,7 @@ def dr_cnn(num_class):
     x = PReLU()(x)
     x = Dropout(0.5)(x)
 
-    output = Dense(num_class, activation='softmax', kernel_regularizer=regularizers.l2())(x)
+    output = Dense(num_class, activation='softmax')(x)
     model = Model(inputs=input, outputs=output)
     model.summary()
     return model
@@ -66,3 +66,28 @@ def latter_cnn(num_class):
     model = Model(inputs=input, outputs=output)
     model.summary()
     return model
+
+
+def crmrn_cnn(num_classes):
+    dr = 0.5
+    model = keras.models.Sequential()
+    in_shp = [2, 128]
+    model.add(Reshape(([1] + in_shp), input_shape=in_shp))
+    model.add(ZeroPadding2D((0, 2)))
+    model.add(Conv2D(256, (1, 3), padding='valid', activation="relu", name="conv1", init='glorot_uniform',
+                     data_format="channels_first"))
+    model.add(Dropout(dr))
+    model.add(ZeroPadding2D((0, 2)))
+    model.add(Conv2D(80, (2, 3), padding="valid", activation="relu", name="conv2", init='glorot_uniform',
+                     data_format="channels_first"))
+    model.add(Dropout(dr))
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu', init='he_normal', name="dense1"))
+    model.add(Dropout(dr))
+    model.add(Dense(num_classes, init='he_normal', name="dense2"))
+    model.add(Activation('softmax'))
+    model.summary()
+    return model
+
+if __name__ == '__main__':
+    latter_cnn(2)

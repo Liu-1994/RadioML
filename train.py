@@ -9,11 +9,14 @@ from postprocessing import *
 
 def run(args):
 
-    snr_index = (args.signal_to_noise_ratio + 8) / 2
+    if args.signal_to_noise_ratio:
+        snr_index = (args.signal_to_noise_ratio + 8) / 2
+    else:
+        snr_index = None
 
-    if args.signal_to_noise_ratio > 18 or snr_index < 0 or args.signal_to_noise_ratio % 2 != 0:
-        print 'Error!!! signal_to_noise_ratio should in -8:2:18, now it is {}'.format(args.signal_to_noise_ratio)
-        exit()
+    # if args.signal_to_noise_ratio > 18 or snr_index < 0 or args.signal_to_noise_ratio % 2 != 0:
+    #     print 'Error!!! signal_to_noise_ratio should in -8:2:18, now it is {}'.format(args.signal_to_noise_ratio)
+    #     exit()
     if not args.mode in ['raw', 'diagram']:
         print 'Error!!! args.mode should be "raw" or "diagram", now it is {}'.format(args.mode)
 
@@ -21,11 +24,11 @@ def run(args):
 
         callbacks = []
         tensorboard = keras.callbacks.TensorBoard(
-            log_dir=os.path.join(args.log_path, 'signal_to_noise_ratio_{}_dB'.format(str(args.signal_to_noise_ratio))),
+            log_dir=os.path.join(args.log_path, 'raw_sample', 'signal_to_noise_ratio_{}_dB'.format(str(args.signal_to_noise_ratio))),
             histogram_freq=0, write_graph=True)
         callbacks.append(tensorboard)
 
-        checkpoint_path = os.path.join(args.checkpoint_path, 'signal_to_noise_ratio_{}_dB'.format(str(args.signal_to_noise_ratio)))
+        checkpoint_path = os.path.join(args.checkpoint_path, 'raw_sample', 'signal_to_noise_ratio_{}_dB'.format(str(args.signal_to_noise_ratio)))
         if not os.path.exists(checkpoint_path):
             os.makedirs(checkpoint_path)
 
@@ -47,12 +50,18 @@ def run(args):
         train_data = train_data[shuffle]
         train_label = train_label[shuffle]
 
+        # print 'train data: ', train_data.shape, 'train label: ', train_label.shape
+        # print 'val data: ', val_data.shape, 'val label: ', val_label.shape
+        # model = dr_cnn(num_class)
+        # sgd = SGD(lr=args.learning_rate, decay=1e-6, momentum=0.9, nesterov=True)
+        # model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['acc'])
+
+        train_data = train_data[:, :, :, 0]
+        val_data = val_data[:, :, :, 0]
         print 'train data: ', train_data.shape, 'train label: ', train_label.shape
         print 'val data: ', val_data.shape, 'val label: ', val_label.shape
-
-        model = dr_cnn(num_class)
-        sgd = SGD(lr=args.learning_rate, decay=1e-6, momentum=0.9, nesterov=True)
-        model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['acc'])
+        model = crmrn_cnn(num_class)
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
         result = model.fit(train_data, train_label,
                            validation_data=[val_data, val_label],
@@ -81,7 +90,7 @@ def run(args):
             os.makedirs(checkpoint_path)
 
         checkpoint = keras.callbacks.ModelCheckpoint(
-            filepath=os.path.join(checkpoint_path, 'weights_{epoch:02d}.hdf5'), period=20,
+            filepath=os.path.join(checkpoint_path, 'weights_{epoch:02d}.hdf5'), period=200,
             save_weights_only=False, save_best_only=False)
         callbacks.append(checkpoint)
 
@@ -103,6 +112,7 @@ def run(args):
         model = latter_cnn(num_class)
         sgd = SGD(lr=args.learning_rate, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['acc'])
+        # model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
         result = model.fit(train_data, train_label,
                            validation_data=[val_data, val_label],
@@ -118,14 +128,15 @@ def run(args):
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default='/dataset/RadioML/constellation_diagram')
+    parser.add_argument('--data_path', type=str, default='/dataset/RadioML/signal_dataset',
+                        help='/dataset/RadioML/signal_dataset')
     parser.add_argument('--log_path', type=str, default='logs')
     parser.add_argument('--checkpoint_path', type=str, default='checkpoints')
-    parser.add_argument('--nb_epoch', type=int, default=200)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--nb_epoch', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--learning_rate', type=float, default=0.001)
-    parser.add_argument('--signal_to_noise_ratio', type=int, default=18)
-    parser.add_argument('--mode', type=str, default='diagram', help="'diagram' or 'raw")
+    parser.add_argument('--signal_to_noise_ratio', type=int, default=-8)
+    parser.add_argument('--mode', type=str, default='raw', help="'diagram' or 'raw")
 
     args = parser.parse_args(argv)
     return args
